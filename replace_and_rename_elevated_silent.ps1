@@ -1,11 +1,11 @@
-<#
+<# 
 .SYNOPSIS
-  Silently delete a target file and rename (move) a source file to that target name, with automatic elevation (UAC) if required.
+  Silently delete a target file and copy a source file to that target name, with automatic elevation (UAC) if required. The source remains unchanged.
 
 .DESCRIPTION
   - This script is pre-configured to operate on the Chrome Cookies files for the user "Dave5":
-      Target (to delete): C:\Users\Dave5\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies
-      Source (to rename): C:\Users\Dave5\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies1
+      Target (to overwrite): C:\Users\Dave5\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies
+      Source (to copy from): C:\Users\Dave5\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies1
   - The script will require that all Chrome processes are closed before it proceeds. It will display a warning and wait until Chrome is fully closed; it will not continue until Chrome is closed.
   - After Chrome is closed, the script will restart itself elevated (showing the UAC prompt) if not already running as Administrator.
   - On success the script is silent and exits with code 0.
@@ -16,7 +16,7 @@ EXIT CODES
   2  = Failed to delete existing target
   3  = Source file not found or invalid path
   4  = Failed to create target directory
-  5  = Move/rename failed
+  5  = Copy failed
   6  = Elevation cancelled or failed
 #>
 
@@ -117,11 +117,11 @@ if (-not (Test-Path -LiteralPath $targetDir)) {
     }
 }
 
-# Move (rename) source to target (overwrite already handled by deletion)
+# Copy source to target (overwrite). Source remains unchanged.
 try {
-    Move-Item -LiteralPath $fullSource -Destination $fullTarget -Force -ErrorAction Stop
+    Copy-Item -LiteralPath $fullSource -Destination $fullTarget -Force -ErrorAction Stop
 } catch {
-    Abort "ERROR: Rename/Move failed: '$fullSource' -> '$fullTarget'. It may be in use by another process." 5
+    Abort "ERROR: Copy failed: '$fullSource' -> '$fullTarget'. It may be in use by another process." 5
 }
 
 # Success: silent exit
